@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Blogger</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" />
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+  <script src="javascripts/pubsub.js"></script>
+  <style>
+    #post {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container is-max-desktop" id="app">
+    <div class="section">
+      <div hx-get="components/header.html" hx-trigger="load"></div>
+    </div>
+    <div class="section">
+      <div class="columns">
+        <div class="column is-narrow">
+          <div hx-get="components/sidebar.html" hx-trigger="load"></div>
+        </div>
+        <div class="column">
+          <div hx-get="components/hero.html" hx-trigger="load"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="section">
+      <h1 class="title">Auto Blogger</h1>
+      <h2 class="subtitle">Create blog posts from YouTube transcripts</h2>
+      <div class="field">
+        <div class="control">
+          <input class="input" v-model="videoId" type="text" placeholder="Enter the ID or URL of a YouTube video">
+        </div>
+      </div>
+    <div class="is-pulled-right" v-if="!isBusy">
+      <button class="button" v-if="!accessToken" @click="logIn">Log In</button>
+      <button class="button" v-if="accessToken && videoId" @click="generateBlogPost">Generate
+        Blog Post</button>
+    </div>
+    <progress v-if="isBusy" class="progress is-large is-info" max="100">60%</progress>
+  </div>
+  <div class="section" v-if="blogPost">
+    <h2 class="is-size-4">Your Blog Post</h2>
+    <div id="post" v-html="blogPost"></div>
+  </div>
+  </div> -->
+</body>
+<script>
+  var app = new Vue({
+    el: "#app",
+    data: {
+      videoId: "",
+      apiKey: "AIzaSyBNkN_Fjc3ATD3zNxAZzj7ebvgdZgAKQK4",
+      accessToken: null,
+      blogPost: "",
+      isBusy: false
+    },
+    mounted: async function () {
+      // see if there is an access_token on the url
+      const urlParams = new URLSearchParams(window.location.hash);
+      this.accessToken = urlParams.get('access_token');
+    },
+    methods: {
+      logIn: async function () {
+        /*
+        * Create form to request access token from Google's OAuth 2.0 server.
+        */
+
+        // Google's OAuth 2.0 endpoint for requesting an access token
+        var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+        // Create <form> element to submit parameters to OAuth 2.0 endpoint.
+        var form = document.createElement('form');
+        form.setAttribute('method', 'GET'); // Send as a GET request.
+        form.setAttribute('action', oauth2Endpoint);
+
+        // Parameters to pass to OAuth 2.0 endpoint.
+        var params = {
+          'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
+          'redirect_uri': 'http://localhost:3000/callback',
+          'response_type': 'token',
+          'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
+          'include_granted_scopes': 'true',
+          'state': 'pass-through value'
+        };
+
+        // Add form parameters as hidden input values.
+        for (var p in params) {
+          var input = document.createElement('input');
+          input.setAttribute('type', 'hidden');
+          input.setAttribute('name', p);
+          input.setAttribute('value', params[p]);
+          form.appendChild(input);
+        }
+
+        // Add form to page and submit it to open the OAuth 2.0 endpoint.
+        document.body.appendChild(form);
+        form.submit();
+      },
+      async generateBlogPost() {
+
+        this.isBusy = true;
+
+        const videoId = this.videoId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})(?:[^\w-]|$)/)[1];
+
+        const result = await fetch(`/download?accessToken=${this.accessToken}&videoId=${videoId}`);
+        const post = await result.text();
+
+        this.blogPost = post;
+
+        this.isBusy = false;
+      }
+    },
+  });
+</script>
+
+</html>

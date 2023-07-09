@@ -1,0 +1,19 @@
+{
+    "name": "auto-blogger",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.18.2",
+        "google-auth-library": "^8.9.0",
+        "googleapis": "^120.0.0",
+        "node-fetch": "^2.6.12",
+        "youtube-dl-exec": "^2.4.6"
+    }
+}

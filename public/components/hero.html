@@ -1,0 +1,12 @@
+<div class="field">
+    <div class="control">
+        <input class="input" v-model="videoId" type="text" placeholder="Enter the ID or URL of a YouTube video">
+    </div>
+</div>
+<!-- <p>Note: you can only create blog posts for videos that are on channels where you are at least a manager.</p> -->
+<div class="is-pulled-right" v-if="!isBusy">
+    <button class="button" v-if="!accessToken" @click="logIn">Log In</button>
+    <button class="button" v-if="accessToken && videoId" @click="generateBlogPost">Generate
+        Blog Post</button>
+</div>
+<progress v-if="isBusy" class="progress is-large is-info" max="100">60%</progress>
