@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 
 const app = express();
 
+app.use('/javascripts', express.static('public/javascripts', { type: 'application/javascript' }));
 app.use(express.static('public'));
 
 const API_KEY = "AIzaSyBNkN_Fjc3ATD3zNxAZzj7ebvgdZgAKQK4";

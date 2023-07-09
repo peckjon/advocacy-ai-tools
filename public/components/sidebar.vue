@@ -1,0 +1,13 @@
+<template>
+    <aside class="menu">
+        <p class="menu-label">
+            Recent Blogs
+        </p>
+        <ul class="menu-list">
+            <li><a>Team Settings</a></li>
+            <li><a>Invitations</a></li>
+            <li><a>Cloud Storage Environment Settings</a></li>
+            <li><a>Authentication</a></li>
+        </ul>
+    </aside>
+</template>
