@@ -3,9 +3,10 @@ Vue.createApp({
   data() {
     return {
       videoId: "",
+      transcript: "",
       apiKey: "AIzaSyBNkN_Fjc3ATD3zNxAZzj7ebvgdZgAKQK4",
       accessToken: null,
-      blogPost: "",
+      openAIResponse: "",
       isActive: false
     }
   },
@@ -13,8 +14,23 @@ Vue.createApp({
     // see if there is an access_token on the url
     const urlParams = new URLSearchParams(window.location.hash);
     this.accessToken = urlParams.get('access_token');
+
+    this.getUserInfo();
   },
   methods: {
+    getUserInfo: async function () {
+      // get the user info from the /api/me endpoint passing the accessToken on the body of the request
+      const result = await fetch('/api/me', {
+        method: 'POST',
+        body: JSON.stringify({
+          accessToken: this.accessToken
+        })
+      });
+
+      const data = await result.json();
+
+      console.log(data);
+    },
     logIn: async function () {
       /*
       * Create form to request access token from Google's OAuth 2.0 server.
@@ -31,7 +47,7 @@ Vue.createApp({
       // Parameters to pass to OAuth 2.0 endpoint.
       var params = {
         'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
-        'redirect_uri': 'http://localhost:3000/callback',
+        'redirect_uri': 'http://localhost:4280',
         'response_type': 'token',
         'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
         'include_granted_scopes': 'true',
@@ -51,16 +67,53 @@ Vue.createApp({
       document.body.appendChild(form);
       form.submit();
     },
-    async generateBlogPost() {
+    async generate() {
+
+      if (this.transcript === "") {
+        return alert("Please enter a transcript");
+      }
 
       this.isActive = true;
 
-      const videoId = this.videoId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})(?:[^\w-]|$)/)[1];
+      // we need to remove extraneous characters from the transcript to save space on the request to OpenAI. The following code puts the transcript into a contiguous string with spaces between each word.
 
-      const result = await fetch(`/download?accessToken=${this.accessToken}&videoId=${videoId}`);
-      const post = await result.text();
+      // remove all carriage returns
+      let prompt = this.transcript.replace(/\r/g, "");
 
-      this.blogPost = post;
+      // strip out time markers in the format: 0:02:38.059,0:02:40.109 (sbv format)
+      prompt = prompt.replace(/\d:\d\d:\d\d.\d\d\d,\d:\d\d:\d\d.\d\d\d/g, "");
+
+      // strip out time markers in the format: 00:00:00,000 --> 00:00:00,000 (srt format)
+      prompt = prompt.replace(/\d\d:\d\d:\d\d,\d\d\d --> \d\d:\d\d:\d\d,\d\d\d/g, "");
+
+      // strip out time markers in the format: 00:00:00.0000 --> 00:00:00.0000 (vtt format)
+      prompt = prompt.replace(/\d\d:\d\d:\d\d.\d\d\d\d --> \d\d:\d\d:\d\d.\d\d\d\d/g, "");
+
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: prompt
+        })
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        this.openAIResponse = data.choices[0].message.content;
+      }
+
+      else {
+        alert("There was an error generating the response: " + response.statusText);
+      }
+
+      // const videoId = this.videoId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})(?:[^\w-]|$)/)[1];
+
+      // const result = await fetch(`/download?accessToken=${this.accessToken}&videoId=${videoId}`);
+      // const post = await result.text();
+
+      // this.blogPost = post;
 
       this.isActive = false;
     }
