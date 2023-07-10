@@ -8,9 +8,6 @@ const app = express();
 app.use('/javascripts', express.static('public/javascripts', { type: 'application/javascript' }));
 app.use(express.static('public'));
 
-const API_KEY = "AIzaSyBNkN_Fjc3ATD3zNxAZzj7ebvgdZgAKQK4";
-const OPEN_AI_API_KEY = "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"
-
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
