@@ -19,6 +19,13 @@
       height: 400px;
 
     }
+
+    #history {
+      height: 350px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      padding-right: 10px;
+    }
   </style>
 </head>
 
@@ -28,8 +35,8 @@
       <div class="navbar">
         <div class="navbar-menu">
           <div class="navbar-end">
-            <a class="button" :href="baseUrl + '.auth/login/google?post_login_redirect_uri=' + redirectUrl"
-              v-if="!accessToken" @click="logIn">Log In</a>
+            <button class="button" @click="logIn" v-if="!accessToken">Log In</button>
+            <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
           </div>
         </div>
       </div>
@@ -42,22 +49,31 @@
     <div class="section">
       <div class="columns">
         <div class="column is-one-third">
-          <aside class="menu">
+          <aside class="menu" id="history">
             <p class="menu-label">
               History
             </p>
-            <ul v-for="item in recents" class="menu-list">
-              <li><a>item.title</a></li>
+            <ul v-for="item in history" class="menu-list">
+              <li>
+                <div class="columns is-vcentered">
+                  <div class="column">
+                    <a @click="getHistoryItem(item.id)">{{ item.timestamp }}</a>
+                  </div>
+                  <div class="column is-narrow">
+                    <button id="delete" class="delete" @click="deleteHistoryItem(item.id)"></button>
+                  </div>
+                </div>
+              </li>
             </ul>
           </aside>
         </div>
         <div class="column">
           <div class="field has-addons">
             <div class="control is-expanded">
-              <input class="input" type="text" placeholder="Enter video id or URL">
+              <input class="input" type="text" placeholder="Enter video id or URL" v-model="videoIdOrUrl">
             </div>
             <div class="control">
-              <button @click="download" class="button">Get Transcript</button>
+              <button @click="downloadTranscript" class="button">Get Transcript</button>
             </div>
           </div>
           <div class="field">
@@ -66,18 +82,23 @@
           </div>
           <div v-if="!isActive" class="field is-grouped">
             <p class="control">
-              <button class="button" @click="generate">
+              <button class="button" @click="generate('blogPrompt')">
                 Blog Post
               </button>
             </p>
             <p class="control">
-              <button class="button">
+              <button class="button" @click="generate('titlePrompt')">
                 Title
               </button>
             </p>
             <p class="control">
-              <button class="button">
+              <button class="button" @click="generate('descriptionPrompt')">
                 Description
+              </button>
+            </p>
+            <p class="control">
+              <button class="button" @click="generate('tweetPrompt')">
+                Tweet
               </button>
             </p>
           </div>
