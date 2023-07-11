@@ -28,7 +28,8 @@
       <div class="navbar">
         <div class="navbar-menu">
           <div class="navbar-end">
-            <button class="button" v-if="!accessToken" @click="logIn">Log In</button>
+            <a class="button" :href="baseUrl + '.auth/login/google?post_login_redirect_uri=' + redirectUrl"
+              v-if="!accessToken" @click="logIn">Log In</a>
           </div>
         </div>
       </div>

@@ -7,7 +7,9 @@ Vue.createApp({
       apiKey: "AIzaSyBNkN_Fjc3ATD3zNxAZzj7ebvgdZgAKQK4",
       accessToken: null,
       openAIResponse: "",
-      isActive: false
+      isActive: false,
+      baseUrl: "https://gray-pebble-0edc23b0f.3.azurestaticapps.net",
+      redirectUrl: "http://localhost:4280"
     }
   },
   mounted() {
@@ -20,16 +22,10 @@ Vue.createApp({
   methods: {
     getUserInfo: async function () {
       // get the user info from the /api/me endpoint passing the accessToken on the body of the request
-      const result = await fetch('/api/me', {
-        method: 'POST',
-        body: JSON.stringify({
-          accessToken: this.accessToken
-        })
-      });
-
-      const data = await result.json();
-
-      console.log(data);
+      const response = await fetch(this.baseUrl + '/.auth/me');
+      const payload = await response.json();
+      const { clientPrincipal } = payload;
+      console.log(clientPrincipal);
     },
     logIn: async function () {
       /*
@@ -37,35 +33,37 @@ Vue.createApp({
       */
 
       // Google's OAuth 2.0 endpoint for requesting an access token
-      var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+      // var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
 
-      // Create <form> element to submit parameters to OAuth 2.0 endpoint.
-      var form = document.createElement('form');
-      form.setAttribute('method', 'GET'); // Send as a GET request.
-      form.setAttribute('action', oauth2Endpoint);
+      // // Create <form> element to submit parameters to OAuth 2.0 endpoint.
+      // var form = document.createElement('form');
+      // form.setAttribute('method', 'GET'); // Send as a GET request.
+      // form.setAttribute('action', oauth2Endpoint);
 
-      // Parameters to pass to OAuth 2.0 endpoint.
-      var params = {
-        'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
-        'redirect_uri': 'http://localhost:4280',
-        'response_type': 'token',
-        'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
-        'include_granted_scopes': 'true',
-        'state': 'pass-through value'
-      };
+      // // Parameters to pass to OAuth 2.0 endpoint.
+      // var params = {
+      //   'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
+      //   'redirect_uri': 'http://localhost:4280',
+      //   'response_type': 'token',
+      //   'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
+      //   'include_granted_scopes': 'true',
+      //   'state': 'pass-through value'
+      // };
 
-      // Add form parameters as hidden input values.
-      for (var p in params) {
-        var input = document.createElement('input');
-        input.setAttribute('type', 'hidden');
-        input.setAttribute('name', p);
-        input.setAttribute('value', params[p]);
-        form.appendChild(input);
-      }
+      // // Add form parameters as hidden input values.
+      // for (var p in params) {
+      //   var input = document.createElement('input');
+      //   input.setAttribute('type', 'hidden');
+      //   input.setAttribute('name', p);
+      //   input.setAttribute('value', params[p]);
+      //   form.appendChild(input);
+      // }
 
-      // Add form to page and submit it to open the OAuth 2.0 endpoint.
-      document.body.appendChild(form);
-      form.submit();
+      // // Add form to page and submit it to open the OAuth 2.0 endpoint.
+      // document.body.appendChild(form);
+      // form.submit();
+
+      window.location
     },
     async generate() {
 
