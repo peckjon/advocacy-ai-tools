@@ -76,7 +76,7 @@ Vue.createApp({
       // Parameters to pass to OAuth 2.0 endpoint.
       var params = {
         'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
-        'redirect_uri': 'http://localhost:4280',
+        'redirect_uri': 'https://gray-pebble-0edc23b0f.3.azurestaticapps.net',
         'response_type': 'token',
         'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
         'include_granted_scopes': 'true',
