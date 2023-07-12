@@ -1,3 +1,5 @@
+var fetch = require("node-fetch");
+
 module.exports = async function (context, req) {
   // get the access token from the query string
   const videoIdOrUrl = req.body.videoIdOrUrl;
