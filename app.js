@@ -145,7 +145,7 @@ Vue.createApp({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          prompt: PROMPTS[selectedPrompt],
+          prompt: PROMPTS[this.selectedPrompt],
           transcript: this.transcript
         }),
         signal: this.controller.signal
