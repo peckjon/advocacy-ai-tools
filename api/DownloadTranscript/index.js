@@ -69,10 +69,12 @@ module.exports = async function (context, req) {
         }
       );
 
-      if (trackResult.status === 401) {
+      if (trackResult.status !== 200) {
+        const data = await trackResult.json();
+
         return (context.res = {
           status: 401,
-          body: "You must be logged in to download transcripts",
+          body: data.error.message
         });
       }
 

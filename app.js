@@ -5,7 +5,6 @@ const PROMPTS = {
   tweetPrompt: "You are a social media manager. Your task is to write a tweet for a YouTube video based on the transcript for that video. The tweet should be no longer than 200 characters and should be concise and something that would cause the user to click on the video. Use suspense, humor, and intrigue to get the user to click on the video. Give 10 tweet suggestions.",
 }
 
-
 Vue.createApp({
   data() {
     return {
@@ -15,7 +14,11 @@ Vue.createApp({
       openAIResponse: "",
       isActive: false,
       channel: "",
-      history: []
+      history: [],
+      controller: new AbortController(),
+      errorMessage: "",
+      selectedPrompt: "blogPrompt",
+      showDownloadDetails: false
     }
   },
   mounted() {
@@ -28,6 +31,8 @@ Vue.createApp({
     }
 
     this.getHistory();
+
+
   },
   methods: {
     checkLogin: async function () {
@@ -60,6 +65,12 @@ Vue.createApp({
 
       return accessToken;
     },
+    getPrompts: async function () {
+      const response = await fetch('/api/GetPrompts');
+      const data = await response.json();
+
+
+    },
     logIn: async function () {
       /*
       * Create form to request access token from Google's OAuth 2.0 server.
@@ -73,10 +84,13 @@ Vue.createApp({
       form.setAttribute('method', 'GET'); // Send as a GET request.
       form.setAttribute('action', oauth2Endpoint);
 
+      // the redirect uri must match the current host
+      const redirectUri = window.location.origin;
+
       // Parameters to pass to OAuth 2.0 endpoint.
       var params = {
         'client_id': '784224902938-5j8d4n59vqve1s9va20up4oklh6u7o34.apps.googleusercontent.com',
-        'redirect_uri': 'https://gray-pebble-0edc23b0f.3.azurestaticapps.net',
+        'redirect_uri': redirectUri,
         'response_type': 'token',
         'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
         'include_granted_scopes': 'true',
@@ -97,6 +111,14 @@ Vue.createApp({
       form.submit();
     },
     downloadTranscript: async function () {
+
+      this.showDownloadDetails = false;
+      this.transcript = "Downloading..."
+
+      if (this.videoIdOrUrl.trim() === "") {
+        return this.errorMessage = "Please enter a video id or url";
+      }
+
       const response = await fetch("/api/download", {
         method: 'POST',
         body: JSON.stringify({
@@ -107,30 +129,12 @@ Vue.createApp({
 
       const data = await response.text();
 
-      if (response.status === 502) {
-        alert("Couldn't contact the API. Is it running?")
-      }
-
-      if (response.status === 401) {
-        alert(data);
-        this.accessToken = null;
-        localStorage.removeItem('accessToken');
-      }
-
-      if (response.status === 500) {
-        alert(data);
-      }
-
-      if (response.status === 200) {
-        this.transcript = data;
-      }
-
-
+      this.transcript = data;
     },
     async generate(prompt) {
 
       if (this.transcript === "") {
-        return alert("Please enter a transcript");
+        return this.errorMessage = "Please enter a transcript";
       }
 
       this.isActive = true;
@@ -141,28 +145,27 @@ Vue.createApp({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          prompt: PROMPTS[prompt],
+          prompt: PROMPTS[selectedPrompt],
           transcript: this.transcript
-        })
+        }),
+        signal: this.controller.signal
       });
 
-      if (response.status === 200) {
-        const data = await response.json();
-        this.openAIResponse = data.choices[0].message.content;
-
-        // add the response to the history and save to local storage
-        this.history.push({
-          id: new Date().getTime() / 1000,
-          timestamp: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: '2-digit', hour: 'numeric', minute: 'numeric', hour12: true }),
-          response: this.openAIResponse,
-        });
-
-        localStorage.setItem('history', JSON.stringify(this.history));
+      if (response.status !== 200) {
+        return this.message = `${response.status}: ${response.statusText}`;
       }
 
-      else {
-        alert("There was an error generating the response: " + response.statusText);
-      }
+      const data = await response.json();
+      this.openAIResponse = data.choices[0].message.content;
+
+      // add the response to the history and save to local storage
+      this.history.push({
+        id: new Date().getTime() / 1000,
+        timestamp: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: '2-digit', hour: 'numeric', minute: 'numeric', hour12: true }),
+        response: this.openAIResponse,
+      });
+
+      localStorage.setItem('history', JSON.stringify(this.history));
 
       this.isActive = false;
     },

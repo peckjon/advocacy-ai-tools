@@ -6,68 +6,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Auto Blogger</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" />
-  <!-- import vue from cdn -->
-  <script src="https://unpkg.com/vue@next"></script>
-
-  <style>
-    pre {
-      white-space: pre-wrap;
-    }
-
-    textarea {
-      width: 100%;
-      height: 400px;
-
-    }
-
-    #history {
-      height: 350px;
-      overflow-y: scroll;
-      overflow-x: hidden;
-      padding-right: 10px;
-    }
-  </style>
+  <script src="https://unpkg.com/vue@3.3.4/dist/vue.global.prod.js"></script>
 </head>
 
 <body>
-  <div class="container is-max-desktop" id="app">
-    <div class="section">
-      <div class="navbar">
-        <div class="navbar-menu">
-          <div class="navbar-end">
-            <button class="button" @click="logIn" v-if="!accessToken">Log In</button>
-            <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
+  <div id="app">
+    <div class="notification is-danger" v-if="errorMessage">
+      <button class="delete" @click="errorMessage = null"></button>
+      {{ errorMessage }}
+    </div>
+    <div class="container">
+      <div class="section">
+        <div class="navbar">
+          <div class="navbar-menu">
+            <div class="navbar-end">
+              <button class="button" @click="logIn" v-if="!accessToken">Log In</button>
+              <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="section">
+        <h1 class="title">Auto YouTube Creator</h1>
+        <h2 class="subtitle">Create blog posts, titles and descriptions from YouTube captions. You can either paste in
+          captions below, or use the </h2>
+      </div>
+      <div class="section">
+        <div class="field">
+          <div class="columns">
+            <div class="column">
+              <label class="label" for="transcript">Video Transcript</label>
+            </div>
+            <div class="column">
+              <label class="label is-pulled-right" v-if="accessToken"><a @click="showDownloadDetails = true">Click to
+                  download from
+                  YouTube</a></label>
+            </div>
+          </div>
+          <div class="control">
+            <textarea v-model="transcript" class="textarea" placeholder="paste in transcript..." name="transcript"
+              id="transcript" cols="30" rows="10"></textarea>
+          </div>
+        </div>
+        <div v-if="!isActive" class="field is-grouped">
+          <div class="columns is-vcentered">
+            <div class="column">Generate a: </div>
+            <div class="column">
+              <div class="select">
+                <select v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
+                  <option value="blogPrompt">Blog Post</option>
+                  <option value="titlePrompt">Video Title</option>
+                  <option value="descriptionPrompt">Video Description</option>
+                  <option value="tweetPrompt">Tweet</option>
+                </select>
+              </div>
+            </div>
+            <div class="column is-narrow">
+              <button class="button" @click="downloadTranscript">Go</button>
+            </div>
+          </div>
+        </div>
+        <div class="columns is-vcentered" v-if="isActive">
+          <div class="column">
+            <progress class="progress is-large is-info" max="100">60%</progress>
+          </div>
+          <div class="column is-narrow">
+            <button class="button is-danger" @click="this.controller.abort()">Cancel</button>
           </div>
         </div>
       </div>
-
-    </div>
-    <div class="section">
-      <h1 class="title">Auto YouTube Creator</h1>
-      <h2 class="subtitle">Create blog posts, titles and descriptions from YouTube transcripts</h2>
-    </div>
-    <div class="section">
-      <div class="columns">
-        <div class="column is-one-third">
-          <aside class="menu" id="history">
-            <p class="menu-label">
-              History
-            </p>
-            <ul v-for="item in history" class="menu-list">
-              <li>
-                <div class="columns is-vcentered">
-                  <div class="column">
-                    <a @click="getHistoryItem(item.id)">{{ item.timestamp }}</a>
+      <div class="section">
+        <div class="columns">
+          <div class="column is-one-third">
+            <aside class="menu" id="history">
+              <p class="menu-label">
+                History
+              </p>
+              <ul v-for="item in history" class="menu-list">
+                <li>
+                  <div class="columns is-vcentered">
+                    <div class="column">
+                      <a @click="getHistoryItem(item.id)">{{ item.timestamp }}</a>
+                    </div>
+                    <div class="column is-narrow">
+                      <button id="delete" class="delete" @click="deleteHistoryItem(item.id)"></button>
+                    </div>
                   </div>
-                  <div class="column is-narrow">
-                    <button id="delete" class="delete" @click="deleteHistoryItem(item.id)"></button>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </aside>
+                </li>
+              </ul>
+            </aside>
+          </div>
+          <div class="column">
+            <h1 class="title">
+              AI Response
+            </h1>
+            <pre>{{openAIResponse}}</pre>
+          </div>
         </div>
-        <div class="column">
+      </div>
+    </div>
+    <div class="modal" :class="{ 'is-active': showDownloadDetails }">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box">
           <div class="field has-addons">
             <div class="control is-expanded">
               <input class="input" type="text" placeholder="Enter video id or URL" v-model="videoIdOrUrl">
@@ -76,48 +118,9 @@
               <button @click="downloadTranscript" class="button">Get Transcript</button>
             </div>
           </div>
-          <div class="field">
-            <textarea v-model="transcript" class="textarea" placeholder="paste in transcript..." name="transcript" id=""
-              cols="30" rows="10"></textarea>
-          </div>
-          <div v-if="!isActive" class="field is-grouped">
-            <p class="control">
-              <button class="button" @click="generate('blogPrompt')">
-                Blog Post
-              </button>
-            </p>
-            <p class="control">
-              <button class="button" @click="generate('titlePrompt')">
-                Title
-              </button>
-            </p>
-            <p class="control">
-              <button class="button" @click="generate('descriptionPrompt')">
-                Description
-              </button>
-            </p>
-            <p class="control">
-              <button class="button" @click="generate('tweetPrompt')">
-                Tweet
-              </button>
-            </p>
-          </div>
-          <div class="columns is-vcentered" v-if="isActive">
-            <div class="column">
-              <progress class="progress is-large is-info" max="100">60%</progress>
-            </div>
-            <div class="column is-narrow">
-              <button class="button is-danger">Cancel</button>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-    <div class="section" v-if="openAIResponse">
-      <h1 class="title">
-        AI Response
-      </h1>
-      <pre>{{openAIResponse}}</pre>
+      <button class="modal-close is-large" @click="showDownloadDetails = false" aria-label="close"></button>
     </div>
   </div>
 </body>
