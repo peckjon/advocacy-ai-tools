@@ -49,6 +49,22 @@
                 <textarea v-model="PROMPTS[selectedPrompt].systemPrompt" class="textarea" placeholder="" name="prompt"
                   id="transcript" cols="30" rows="5"></textarea>
               </div>
+              <div id="promptSelect" v-if="!isActive" class="field is-grouped mt-3">
+                <div class="columns is-vcentered">
+                  <div class="column">Generate a: </div>
+                  <div class="column">
+                    <div class="select">
+                      <select title="Prompt Options" v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
+                        <option v-for="(prompt, key) in PROMPTS" :key="key" :value="key">{{ prompt.promptName }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="column is-narrow">
+                    <button class="button" @click="generate">Go</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="column is-one-half">
@@ -60,28 +76,13 @@
             </div>
           </div>
         </div>
-        <div id="promptSelect" v-if="!isActive" class="field is-grouped">
-          <div class="columns is-vcentered">
-            <div class="column">Generate a: </div>
-            <div class="column">
-              <div class="select">
-                <select title="Prompt Options" v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
-                  <option v-for="(prompt, key) in PROMPTS" :key="key" :value="key">{{ prompt.promptName }}</option>
-                </select>
-              </div>
-            </div>
-            <div class="column is-narrow">
-              <button class="button" @click="generate">Go</button>
-            </div>
-          </div>
-        </div>
         <div id="progress" class="columns is-vcentered" v-if="isActive">
           <div class="column">
             <progress class="progress is-large is-info" max="100">60%</progress>
           </div>
-          <div class="column is-narrow">
+          <!-- <div class="column is-narrow">
             <button class="button is-danger" @click="this.controller.abort()">Cancel</button>
-          </div>
+          </div> -->
         </div>
       </div>
       <!-- <div class="section">
