@@ -13,55 +13,60 @@
 
 <body>
   <div id="app">
-    <div class="notification is-danger" v-if="errorMessage">
+    <div id="error" class="notification is-danger" v-if="errorMessage">
       <button class="delete" @click="errorMessage = null"></button>
       {{ errorMessage }}
     </div>
     <div class="container">
       <div class="section">
-        <div class="navbar">
-          <div class="navbar-menu">
-            <div class="navbar-end">
-              <button class="button" @click="logIn" v-if="!accessToken">Log In</button>
-              <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
+        <h1 class="title">Advocacy AI Tools</h1>
+        <h2 class="subtitle">Create blog posts, titles and descriptions and more.</h2>
+        <button class="button" @click="logIn" v-if="!accessToken">Log In to YouTube Channel</button>
+        <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
+      </div>
+      <div class="section">
+        <div class="columns">
+          <div id="firstHalf" class="column is-one-half">
+            <div id="source" class="field">
+              <label class="label is-inline" for="transcript">Source</label>
+              <label class="label is-inline is-pulled-right" v-if="accessToken"><a
+                  @click="showDownloadDetails = true">Download
+                  from YouTube</a></label>
+              <div class="control">
+                <textarea v-model="transcript" class="textarea" placeholder="paste in transcript..." name="transcript"
+                  id="transcript" cols="30" rows="5"></textarea>
+              </div>
+              <!-- <div class="columns is-vcentered">
+                <div class="column">
+                </div>
+                <div class="column">
+                </div>
+              </div> -->
+            </div>
+            <div class="field" id="prompt">
+              <label for="prompt" class="label">Prompt</label>
+              <div class="control">
+                <textarea v-model="PROMPTS[selectedPrompt].systemPrompt" class="textarea" placeholder="" name="prompt"
+                  id="transcript" cols="30" rows="5"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="column is-one-half">
+            <div class="field">
+              <label class="label" for="response">Response</label>
+            </div>
+            <div class="control">
+              <pre>{{openAIResponse}}</pre>
             </div>
           </div>
         </div>
-
-      </div>
-      <div class="section">
-        <h1 class="title">Auto YouTube Creator</h1>
-        <h2 class="subtitle">Create blog posts, titles and descriptions from YouTube captions. You can either paste in
-          captions below, or use the </h2>
-      </div>
-      <div class="section">
-        <div class="field">
-          <div class="columns">
-            <div class="column">
-              <label class="label" for="transcript">Video Transcript</label>
-            </div>
-            <div class="column">
-              <label class="label is-pulled-right" v-if="accessToken"><a @click="showDownloadDetails = true">Click to
-                  download from
-                  YouTube</a></label>
-            </div>
-          </div>
-          <div class="control">
-            <textarea v-model="transcript" class="textarea" placeholder="paste in transcript..." name="transcript"
-              id="transcript" cols="30" rows="10"></textarea>
-          </div>
-        </div>
-        <div v-if="!isActive" class="field is-grouped">
+        <div id="promptSelect" v-if="!isActive" class="field is-grouped">
           <div class="columns is-vcentered">
             <div class="column">Generate a: </div>
             <div class="column">
               <div class="select">
                 <select title="Prompt Options" v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
-                  <option value="blogPrompt">Blog Post</option>
-                  <option value="titlePrompt">Video Title</option>
-                  <option value="descriptionPrompt">Video Description</option>
-                  <option value="tweetPrompt">Tweet</option>
-                  <option value="tweetThreadPrompt">Twitter Thread</option>
+                  <option v-for="(prompt, key) in PROMPTS" :key="key" :value="key">{{ prompt.promptName }}</option>
                 </select>
               </div>
             </div>
@@ -70,7 +75,7 @@
             </div>
           </div>
         </div>
-        <div class="columns is-vcentered" v-if="isActive">
+        <div id="progress" class="columns is-vcentered" v-if="isActive">
           <div class="column">
             <progress class="progress is-large is-info" max="100">60%</progress>
           </div>
@@ -79,7 +84,7 @@
           </div>
         </div>
       </div>
-      <div class="section">
+      <!-- <div class="section">
         <div class="columns">
           <div class="column is-one-third">
             <aside class="menu" id="history">
@@ -101,29 +106,30 @@
             </aside>
           </div>
           <div class="column">
-            <h1 class="title">
-              AI Response
-            </h1>
-            <pre>{{openAIResponse}}</pre>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
     <div class="modal" :class="{ 'is-active': showDownloadDetails }">
       <div class="modal-background"></div>
-      <div class="modal-content">
-        <div class="box">
-          <div class="field has-addons">
+      <div class="modal-card">
+        <div class="modal-card-head">
+          <button class="delete" @click="showDownloadDetails = false" aria-label="close"></button>
+        </div>
+        <div class="modal-card-body">
+          <p>Enter a YouTube video URL or ID to download the transcript. Note that you must be at least a contributor
+            on
+            the channel to download transcriptions.</p>
+          <div class="field">
             <div class="control is-expanded">
               <input class="input" type="text" placeholder="Enter video id or URL" v-model="videoIdOrUrl">
             </div>
-            <div class="control">
-              <button @click="downloadTranscript" class="button">Get Transcript</button>
-            </div>
           </div>
         </div>
+        <footer class="modal-card-foot is-justify-content-flex-end">
+          <button @click="downloadTranscript" class="button">Get Transcript</button>
+        </footer>
       </div>
-      <button class="modal-close is-large" @click="showDownloadDetails = false" aria-label="close"></button>
     </div>
   </div>
 </body>

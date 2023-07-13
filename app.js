@@ -1,10 +1,3 @@
-const PROMPTS = {
-  blogPrompt: "You are a creative writing assistant that writes blog posts when given a trascript from a video.Format all your responses as Markdown. Be entertaining. Fill in code examples where you can guess from the transcript what code is being displayed. Include images that go with the text. Write as long a post as the token limit will allow.",
-  descriptionPrompt: "Your task is to write a description for a YouTube video based on the transcript for that video. The descriptions should have 3 sections separated by carriage returns. The first section is a concise, entertaining summary of the transcript no longer than 2 sentences. You may use emoji in the summary. The second section is the timestamps for the sections of the video. You should format the timestamps as HH:MM:SS. The timestamp format in the transcript is HH:MM:SS,Milliseconds. The third section of your response is 3 relevant hashtags.",
-  titlePrompt: "Your task is to write a title for a YouTube video based on the transcript for that video. The title should be no longer than 60 characters and should be concise and something that would cause the user to click on the video. Use suspense, humor, and intrigue to get the user to click on the video. Give 10 title suggestions.",
-  tweetPrompt: "You are a social media manager. Your task is to write a tweet for a YouTube video based on the transcript for that video. The tweet should be no longer than 200 characters and should be concise. Use portmantues, puns, and wordplay to get the user to click on the video. Give 5 tweet suggestions. Do not use any hashtags.",
-  tweetThreadPrompt: "Your task is to write a tweet thread for a new release of vs code based on the release notes which will be given to you as a transcript. Create one tweet for each major item in the release. Use portmantues, puns, and wordplay to make each tweet entertaining. End the thread with a tweet that asks a question. Do not use any hashtags in the thread.",
-}
 
 Vue.createApp({
   data() {
@@ -12,17 +5,23 @@ Vue.createApp({
       videoIdOrUrl: "",
       transcript: "",
       accessToken: null,
-      openAIResponse: "",
+      openAIResponse: "Enter source content and click 'Go' to generate.",
       isActive: false,
       channel: "",
       history: [],
       controller: new AbortController(),
       errorMessage: "",
-      selectedPrompt: "blogPrompt",
-      showDownloadDetails: false
+      selectedPrompt: "loading",
+      showDownloadDetails: false,
+      PROMPTS: {
+        loading: {
+          promptName: "loading",
+          systemPrompt: "Loading..."
+        }
+      }
     }
   },
-  mounted() {
+  async mounted() {
     // get the access token if it exists
     this.accessToken = this.getAccessToken();
 
@@ -31,9 +30,8 @@ Vue.createApp({
       this.checkLogin();
     }
 
-    this.getHistory();
-
-
+    this.PROMPTS = await this.getPrompts();
+    this.selectedPrompt = "blogPost";
   },
   methods: {
     checkLogin: async function () {
@@ -67,10 +65,16 @@ Vue.createApp({
       return accessToken;
     },
     getPrompts: async function () {
-      const response = await fetch('/api/GetPrompts');
+      const response = await fetch('/api/prompts');
       const data = await response.json();
 
+      // convert the data array into an object where the key is the promptType
+      const prompts = {};
+      data.forEach(prompt => {
+        prompts[prompt.promptType] = prompt;
+      });
 
+      return prompts;
     },
     logIn: async function () {
       /*
@@ -135,7 +139,7 @@ Vue.createApp({
     async generate(prompt) {
 
       if (this.transcript === "") {
-        return this.errorMessage = "Please enter a transcript";
+        return this.errorMessage = "Please enter source content for the prompt.";
       }
 
       this.isActive = true;
@@ -146,7 +150,7 @@ Vue.createApp({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          prompt: PROMPTS[this.selectedPrompt],
+          prompt: this.PROMPTS[this.selectedPrompt],
           transcript: this.transcript
         }),
         signal: this.controller.signal

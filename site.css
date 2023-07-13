@@ -1,5 +1,6 @@
 pre {
   white-space: pre-wrap;
+  background-color: white;
 }
 
 textarea {
@@ -12,4 +13,17 @@ textarea {
   overflow-y: scroll;
   overflow-x: hidden;
   padding-right: 10px;
+}
+
+#firstHalf {
+  /* soft, grey border on the right side only */
+  border-right: 1px solid #ddd;
+}
+
+#error {
+  position: fixed;
+  bottom: 0;
+  z-index: 1000;
+  width: 100%;
+  margin: 0;
 }
