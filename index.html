@@ -65,6 +65,9 @@
                   </div>
                 </div>
               </div>
+              <div id="progress" class="mt-3" v-if="isActive">
+                <progress class="progress is-large is-info" max="100">60%</progress>
+              </div>
             </div>
           </div>
           <div class="column is-one-half">
@@ -76,40 +79,7 @@
             </div>
           </div>
         </div>
-        <div id="progress" class="columns is-vcentered" v-if="isActive">
-          <div class="column">
-            <progress class="progress is-large is-info" max="100">60%</progress>
-          </div>
-          <!-- <div class="column is-narrow">
-            <button class="button is-danger" @click="this.controller.abort()">Cancel</button>
-          </div> -->
-        </div>
       </div>
-      <!-- <div class="section">
-        <div class="columns">
-          <div class="column is-one-third">
-            <aside class="menu" id="history">
-              <p class="menu-label">
-                History
-              </p>
-              <ul v-for="item in history" class="menu-list">
-                <li>
-                  <div class="columns is-vcentered">
-                    <div class="column">
-                      <a @click="getHistoryItem(item.id)">{{ item.timestamp }}</a>
-                    </div>
-                    <div class="column is-narrow">
-                      <button id="delete" class="delete" @click="deleteHistoryItem(item.id)"></button>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </aside>
-          </div>
-          <div class="column">
-          </div>
-        </div>
-      </div> -->
     </div>
     <div class="modal" :class="{ 'is-active': showDownloadDetails }">
       <div class="modal-background"></div>

@@ -163,33 +163,7 @@ Vue.createApp({
       const data = await response.json();
       this.openAIResponse = data.choices[0].message.content;
 
-      // add the response to the history and save to local storage
-      this.history.push({
-        id: new Date().getTime() / 1000,
-        timestamp: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: '2-digit', hour: 'numeric', minute: 'numeric', hour12: true }),
-        response: this.openAIResponse,
-      });
-
-      localStorage.setItem('history', JSON.stringify(this.history));
-
       this.isActive = false;
-    },
-    getHistory: function () {
-      const history = localStorage.getItem('history');
-
-      // if the history element is present, parse it and set it to the history variable
-      if (history) {
-        this.history = JSON.parse(history);
-      }
-    },
-    getHistoryItem: function (id) {
-      const item = this.history.find(item => item.id === id);
-      this.openAIResponse = item.response;
-    },
-    deleteHistoryItem: function (id) {
-      const index = this.history.findIndex(item => item.id === id);
-      this.history.splice(index, 1);
-      localStorage.setItem('history', JSON.stringify(this.history));
     }
   }
 }).mount('#app');

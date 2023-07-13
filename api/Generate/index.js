@@ -4,7 +4,7 @@ var { encode } = require("gpt-3-encoder");
 module.exports = async function (context, req) {
 
     // read the transcript variable off the request body
-    const userPrompt = `Perform your task based on the following video transcript: ${req.body.transcript}`;
+    const userPrompt = `${req.body.transcript}`;
     const systemPrompt = req.body.prompt;
 
     // encode the prompts
