@@ -56,11 +56,12 @@
             <div class="column">Generate a: </div>
             <div class="column">
               <div class="select">
-                <select v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
+                <select title="Prompt Options" v-model="selectedPrompt" name="selectPrompt" id="selectPrompt">
                   <option value="blogPrompt">Blog Post</option>
                   <option value="titlePrompt">Video Title</option>
                   <option value="descriptionPrompt">Video Description</option>
                   <option value="tweetPrompt">Tweet</option>
+                  <option value="tweetThreadPrompt">Twitter Thread</option>
                 </select>
               </div>
             </div>
