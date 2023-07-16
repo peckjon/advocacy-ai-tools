@@ -3,7 +3,7 @@ Vue.createApp({
   data() {
     return {
       videoIdOrUrl: "",
-      transcript: "",
+      source: "",
       accessToken: null,
       openAIResponse: "Enter source content and click 'Go' to generate.",
       isActive: false,
@@ -32,6 +32,9 @@ Vue.createApp({
 
     this.PROMPTS = await this.getPrompts();
     this.selectedPrompt = "blogPost";
+
+    // load the source from local storage
+    this.source = localStorage.getItem('source');
   },
   methods: {
     checkLogin: async function () {
@@ -118,7 +121,7 @@ Vue.createApp({
     downloadTranscript: async function () {
 
       this.showDownloadDetails = false;
-      this.transcript = "Downloading..."
+      this.source = "Downloading..."
 
       if (this.videoIdOrUrl.trim() === "") {
         return this.errorMessage = "Please enter a video id or url";
@@ -134,11 +137,11 @@ Vue.createApp({
 
       const data = await response.text();
 
-      this.transcript = data;
+      this.source = data;
     },
     async generate(prompt) {
 
-      if (this.transcript === "") {
+      if (this.source === "") {
         return this.errorMessage = "Please enter source content for the prompt.";
       }
 
@@ -151,7 +154,7 @@ Vue.createApp({
         },
         body: JSON.stringify({
           prompt: this.PROMPTS[this.selectedPrompt].systemPrompt,
-          transcript: this.transcript
+          transcript: this.source
         }),
         signal: this.controller.signal
       });
@@ -164,6 +167,9 @@ Vue.createApp({
       this.openAIResponse = data.choices[0].message.content;
 
       this.isActive = false;
-    }
+    },
+    saveSource: function () {
+      localStorage.setItem('source', this.source);
+    },
   }
 }).mount('#app');
