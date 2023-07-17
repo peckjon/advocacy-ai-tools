@@ -21,7 +21,7 @@
       <div class="section">
         <h1 class="title">Advocacy AI Tools</h1>
         <h2 class="subtitle">Create blog posts, titles and descriptions and more.</h2>
-        <button class="button" @click="logIn" v-if="!accessToken">Log In to YouTube Channel</button>
+        <button class="button" _"on htmx:click add .is-active to #downloadUrlModal">Log In to YouTube Channel</button>
         <p v-if="accessToken">Logged In To YouTube Channel: <b>{{ channel }}</b></p>
       </div>
       <div class="section">
@@ -81,7 +81,7 @@
         </div>
       </div>
     </div>
-    <div class="modal" :class="{ 'is-active': showDownloadDetails }">
+    <div id="downloadUrlModal" class="modal" :class="{ 'is-active': showDownloadDetails }">
       <div class="modal-background"></div>
       <div class="modal-card">
         <div class="modal-card-head">
