@@ -1,0 +1,77 @@
+<div class="container">
+    <div class="section">
+        <div class="title">Advocacy AI Tools</div>
+        <h2 class="subtitle">
+            Create social content based on video transcripts, blog posts and
+            documenatation.
+        </h2>
+        {{#if !accessToken}}
+        <button type="button" class="button">
+            Log in to YouTube
+        </button>
+        {{/if}}
+    </div>
+    <div class="section">
+        <div class="columns">
+            <div class="column is-half" id="leftSide">
+                <label class="label is-inline" for="transcript">Source</label>
+                {{#if accessToken}}
+                <label class="label is-inline is-pulled-right"><a
+                        _="on click add .is-active to #downloadUrlModal">Download from YouTube</a></label>
+                        {{/if}}
+                <div>
+                    <div class="control">
+                        <textarea class="textarea"
+                            placeholder="paste in source (video transcript, doc article, release notes, ect)..."
+                            name="userPrompt" id="userPrompt" cols="30" rows="5"
+                            _="init set my value to localStorage.source on input set localStorage.source to my value"></textarea>
+                    </div>
+                    <label for="systemPrompt" class="label">Prompt</label>
+                    <div class="control">
+                        <textarea class="textarea" placeholder="" name="systemPrompt" id="systemPrompt" cols="30"
+                            rows="5"></textarea>
+                        </form>
+                        <div id="promptSelect" class="field is-grouped mt-3">
+                            <div class="columns is-vcentered">
+                                <div class="column" hx-indicator="#progress-indicator">
+                                    Generate a:
+                                </div>
+                                <div class="column">
+                                    <div class="select">
+                                        <select _="on change set #systemPrompt.innerHTML to my value"
+                                            title="Prompt Options" name="selectPrompt" id="selectPrompt">
+                                            {{#each prompt}}
+                                            <option value="{{ prompt.systemPrompt }}">{{prompt.promptName}}
+                                            </option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="column is-narrow">
+                                    <button class="button" hx-post="api/completion" hx-indicator="#progress-indicator"
+                                        hx-include="[name='systemPrompt'], [name='userPrompt']" hx-target="#completion"
+                                        hx-swap="outerHTML">
+                                        Go
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="progress-indicator" class="htmx-indicator mt-3" v-if="isActive">
+                            <progress class="progress is-large is-info" max="100">
+                                60%
+                            </progress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-half">
+                <div class="field" id="completion">
+                    <label class="label" for="response">Completion</label>
+                </div>
+                <div class="control">
+                    <pre></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
