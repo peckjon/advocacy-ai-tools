@@ -1,155 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Auto Advocate</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css"
-    />
-    <script src="https://unpkg.com/htmx.org/dist/htmx.min.js"></script>
-    <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
-  </head>
 
-  <body>
-    <div class="container">
-      <div class="section">
-        <div class="title">Advocacy AI Tools</div>
-        <h2 class="subtitle">
-          Create social content based on video transcripts, blog posts and
-          documenatation.
-        </h2>
-        <button
-          type="button"
-          class="button"
-          _="on click add .is-active to #downloadUrlModal"
-        >
-          Log in to YouTube
-        </button>
-      </div>
-      <div class="section">
-        <div class="columns">
-          <div class="column is-one-half">
-            <label class="label is-inline" for="transcript">Source</label>
-            <label class="label is-inline is-pulled-right" v-if="accessToken"
-              ><a @click="showDownloadDetails = true"
-                >Download from YouTube</a
-              ></label
-            >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Advocate</title>
+  <script src="https://unpkg.com/htmx.org/dist/htmx.min.js"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css" />
+  <link rel="stylesheet" href="site.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="section">
+      <div class="title">Advocacy AI Tools</div>
+      <h2 class="subtitle">
+        Create social content based on video transcripts, blog posts and
+        documenatation.
+      </h2>
+      <button type="button" class="button" _="on click add .is-active to #downloadUrlModal">
+        Log in to YouTube
+      </button>
+    </div>
+    <div class="section">
+      <div class="columns">
+        <div class="column is-half" id="leftSide">
+          <label class="label is-inline" for="transcript">Source</label>
+          <label class="label is-inline is-pulled-right" v-if="accessToken"><a
+              @click="showDownloadDetails = true">Download from YouTube</a></label>
+          <div>
             <div class="control">
-              <textarea
-                class="textarea"
-                placeholder="paste in source (video transcript, doc article, release notes, ect)..."
-                name="source"
-                id="source"
-                cols="30"
-                rows="5"
-                _="init set my value to localStorage.source
-                   on input set localStorage.source to my value"
-              ></textarea>
+              <textarea class="textarea"
+                placeholder="paste in source (video transcript, doc article, release notes, ect)..." name="userPrompt"
+                id="userPrompt" cols="30" rows="5"
+                _="init set my value to localStorage.source on input set localStorage.source to my value"></textarea>
             </div>
-            <div class="field">
-              <form action="">
-                <label for="prompt" class="label">Prompt</label>
-                <div class="control">
-                  <textarea
-                    class="textarea"
-                    placeholder=""
-                    name="prompt"
-                    id="prompt"
-                    cols="30"
-                    rows="5"
-                  ></textarea>
-                </div>
-                <div id="promptSelect" class="field is-grouped mt-3">
-                  <div class="columns is-vcentered">
-                    <div class="column" hx-indicator="#progress-indicator">
-                      Generate a:
-                    </div>
-                    <div class="column">
-                      <div class="select">
-                        <select
-                          _="on change set #prompt.innerHTML to my value"
-                          title="Prompt Options"
-                          name="selectPrompt"
-                          id="selectPrompt"
-                        >
-                          <option
-                            value="loading"
-                            hx-get="api/prompts"
-                            hx-trigger="load"
-                            hx-swap="outerHTML"
-                          >
-                            Loading
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="column is-narrow">
-                      <button
-                        type="submit"
-                        class="button"
-                        hx:click="api/generate"
-                      >
-                        Go
-                      </button>
+            <label for="prompt" class="label">Prompt</label>
+            <div class="control">
+              <textarea class="textarea" placeholder="" name="systemPrompt" id="systemPrompt" cols="30"
+                rows="5"></textarea>
+              </form>
+              <div id="promptSelect" class="field is-grouped mt-3">
+                <div class="columns is-vcentered">
+                  <div class="column" hx-indicator="#progress-indicator">
+                    Generate a:
+                  </div>
+                  <div class="column">
+                    <div class="select">
+                      <select _="on change set #systemPrompt.innerHTML to my value" title="Prompt Options"
+                        name="selectPrompt" id="selectPrompt">
+                        <option value="loading" hx-get="api/prompts" hx-trigger="load" hx-swap="outerHTML">
+                          Loading
+                        </option>
+                      </select>
                     </div>
                   </div>
+                  <div class="column is-narrow">
+                    <button class="button" hx-post="api/completion" hx-indicator="#progress-indicator"
+                      hx-include="[name='systemPrompt'], [name='userPrompt']" hx-target="#completion"
+                      hx-swap="outerHTML">
+                      Go
+                    </button>
+                  </div>
                 </div>
-                <div
-                  id="progress-indicator"
-                  class="htmx-indicator mt-3"
-                  v-if="isActive"
-                >
-                  <progress class="progress is-large is-info" max="100">
-                    60%
-                  </progress>
-                </div>
-              </form>
-            </div>
-          </div>
-          <div class="column is-one-half"></div>
-        </div>
-      </div>
-    </div>
-    <div id="downloadUrlModal" class="modal">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <div class="modal-card-head">
-          <button
-            class="delete is-pulled-right"
-            aria-label="close"
-            _="on click remove .is-active from #downloadUrlModal"
-          ></button>
-        </div>
-        <div class="modal-card-body">
-          <p>
-            Enter a YouTube video URL or ID to download the transcript. Note
-            that you must be at least a contributor on the channel to download
-            transcriptions.
-          </p>
-          <div class="field">
-            <div class="control is-expanded">
-              <input
-                class="input"
-                type="text"
-                placeholder="Enter video id or URL"
-                v-model="videoIdOrUrl"
-              />
+              </div>
+              <div id="progress-indicator" class="htmx-indicator mt-3" v-if="isActive">
+                <progress class="progress is-large is-info" max="100">
+                  60%
+                </progress>
+              </div>
             </div>
           </div>
         </div>
-        <footer class="modal-card-foot is-justify-content-flex-end">
-          <button class="button">Get Transcript</button>
-        </footer>
+        <div class="column is-half">
+          <div class="field" id="completion">
+            <label class="label" for="response">Completion</label>
+          </div>
+          <div class="control">
+            <pre></pre>
+          </div>
+        </div>
       </div>
     </div>
-  </body>
-  <script>
-    // htmx.on("#source", "input", function (evt) {
-    //   sourceTextArea = evt.target;
-    //   localStorage.setItem("source", evt.target.value);
-    // });
-  </script>
+  </div>
+  <div id="downloadUrlModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <div class="modal-card-head">
+        <button class="delete is-pulled-right" aria-label="close"
+          _="on click remove .is-active from #downloadUrlModal"></button>
+      </div>
+      <div class="modal-card-body">
+        <p>
+          Enter a YouTube video URL or ID to download the transcript. Note
+          that you must be at least a contributor on the channel to download
+          transcriptions.
+        </p>
+        <div class="field">
+          <div class="control is-expanded">
+            <input class="input" type="text" placeholder="Enter video id or URL" v-model="videoIdOrUrl" />
+          </div>
+        </div>
+      </div>
+      <footer class="modal-card-foot is-justify-content-flex-end">
+        <button class="button">Get Transcript</button>
+      </footer>
+    </div>
+  </div>
+</body>
+<script src="youtube.js"></script>
+
 </html>

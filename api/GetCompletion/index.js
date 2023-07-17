@@ -1,17 +1,19 @@
 var fetch = require("node-fetch");
 var { encode } = require("gpt-3-encoder");
+var { parse } = require("qs");
+var hbs = require("handlebars");
+var fs = require("fs");
 
 module.exports = async function (context, req) {
 
-    // read the transcript variable off the request body
-    const userPrompt = `${req.body.transcript}`;
-    const systemPrompt = req.body.prompt;
+    // read the source and prompt parameters from the body of the request. The body is www-form-urlencoded.
+    const { userPrompt, systemPrompt } = parse(req.body);
 
     // encode the prompts
-    const promptEncoded = encode(userPrompt);
+    const userPromptEncoded = encode(userPrompt);
     const systemPromptEncoded = encode(systemPrompt);
 
-    const availableTokenLength = 1600 - (promptEncoded.length + systemPromptEncoded.length);
+    const availableTokenLength = 1600 - (userPromptEncoded.length + systemPromptEncoded.length);
 
     // call the OpenAI API to generate a summary
     let openAIReq = {
@@ -30,8 +32,15 @@ module.exports = async function (context, req) {
 
     const json = await response.json();
 
+    // use handlebars to parse the ./template.hbs file into HTML. pass the response from openai into the template.
+    const template = hbs.compile(fs.readFileSync(__dirname + "/template.hbs", "utf8"));
+    const html = template({ completion: json.choices[0].message.content, usedTokens: json.usage.total_tokens, availableTokens: 1600 });
+
     context.res = {
         status: response.status,
-        body: json
+        headers: {
+            "Content-Type": "text/html",
+        },
+        body: html
     };
 }
