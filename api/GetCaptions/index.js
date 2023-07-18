@@ -1,4 +1,5 @@
 var { getSubtitles } = require('youtube-caption-extractor');
+var fetch = require("node-fetch");
 
 module.exports = async function (context, req) {
   try {
