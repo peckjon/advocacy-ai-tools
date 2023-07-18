@@ -19,10 +19,7 @@ module.exports = async function (context, req) {
 
     // return the prompts to the client
     context.res = {
-      headers: {
-        "Content-Type": "text/html",
-      },
-      body: html,
+      body: { systemPrompts: resources },
     };
   } catch (error) {
     context.res = {

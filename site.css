@@ -15,25 +15,10 @@ textarea {
   padding-right: 10px;
 }
 
-#leftSide {
-  /* soft, grey border on the right side only */
-  border-right: 1px solid #ddd;
-}
-
 #error {
   position: fixed;
   bottom: 0;
   z-index: 1000;
   width: 100%;
   margin: 0;
-}
-
-.htmx-indicator {
-  display: none;
-}
-.htmx-request .htmx-indicator {
-  display: block;
-}
-.htmx-request.htmx-indicator {
-  display: block;
 }
