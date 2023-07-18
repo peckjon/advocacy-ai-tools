@@ -15,11 +15,6 @@ textarea {
   padding-right: 10px;
 }
 
-#firstHalf {
-  /* soft, grey border on the right side only */
-  border-right: 1px solid #ddd;
-}
-
 #error {
   position: fixed;
   bottom: 0;

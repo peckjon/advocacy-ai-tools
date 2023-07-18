@@ -14,7 +14,7 @@ module.exports = async function (context, req) {
 
     // return the prompts to the client
     context.res = {
-      body: resources
+      body: { systemPrompts: resources },
     };
   }
   catch (error) {
