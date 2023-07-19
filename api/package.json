@@ -14,5 +14,8 @@
     "node-fetch": "^2.6.12",
     "qs": "^6.11.2",
     "youtube-caption-extractor": "^1.4.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
