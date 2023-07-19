@@ -17,24 +17,35 @@
       <div class="section">
         <div class="title">Advocacy AI Tools</div>
         <h2 class="subtitle">
-          Create social content based on video transcripts, blog posts and
-          documenatation.
+          Create content based on video transcripts, blog posts, documentation
+          and more.
         </h2>
+        <p>
+          Notes: 
+          <ol>
+            <li>This tool is for <b>internal use only.</b> Please do not share.</li>
+            <li>There is a limit of ~10 minutes for video transcripts. After that you will likely hit the token limit in GPT (16K).</li>
+            <li>If you are using a YouTube captions as the source, its best to use the "Get Captions from YouTube" button. The captions that the app downloads are formatted for a better response from GPT. You can paste in vtt, ect. but YMMV.</li>
+            <li>Accepting PR's at https://github.com/burkeholland/auto-blogger</li>
+          </ol>
+        </p>
       </div>
       <div class="section">
         <div class="columns">
           <div class="column is-half" style="border-right: 1px solid #ddd">
             <label class="label is-inline" for="transcript">Source</label>
             <label class="label is-inline is-pulled-right"
-              ><a @click="displayDownloadModal = true"
-                >Download from YouTube</a
+              ><a
+                title="Download the video transcript from YouTube."
+                @click="displayDownloadModal = true"
+                >Get Captions from YouTube</a
               ></label
             >
             <div>
               <div class="control">
                 <textarea
                   class="textarea"
-                  placeholder="paste in source (video transcript, doc article, release notes, ect)..."
+                  placeholder="Paste in source (video captions, doc article, release notes, ect)..."
                   name="userPrompt"
                   id="userPrompt"
                   v-model="userPrompt"
@@ -44,7 +55,7 @@
                   @input="saveToLocalStorage('userPrompt', $event.target.value)"
                 ></textarea>
               </div>
-              <label for=" systemPrompt" class="label">Prompt</label>
+              <label for=" systemPrompt" class="label mt-2">Prompt</label>
               <div class="control">
                 <textarea
                   class="textarea"
@@ -85,7 +96,9 @@
                       </div>
                     </div>
                     <div class="column is-narrow">
-                      <button class="button" @click="getCompletion">Go</button>
+                      <button class="button is-primary" @click="getCompletion">
+                        Go
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -122,7 +135,11 @@
             ></button>
           </div>
           <div class="modal-card-body">
-            <p>Enter a YouTube video URL to download the transcript</p>
+            <p>
+              Enter a YouTube video URL to download the transcript. The limit
+              for videos is around 10 minutes. After that, you will likely hit
+              the GPT token limit.
+            </p>
             <div class="field">
               <div class="control is-expanded">
                 <input
@@ -143,13 +160,15 @@
               Get Captions
             </button>
           </footer>
-          <div
-            class="is-display-block notification is-danger"
-            v-if="captionsErrorMessage"
-          >
-            Unable to retrieve captions: {{captionsErrorMessage}}
-          </div>
         </div>
+      </div>
+      <div
+        id="error"
+        class="is-display-block notification is-danger"
+        v-if="errorMessage"
+      >
+        <button class="delete" @click="errorMessage = ''"></button>
+        {{errorMessage}}
       </div>
     </div>
   </body>
@@ -172,7 +191,7 @@
           ],
           videoUrl: "",
           completion: "",
-          captionsErrorMessage: "",
+          errorMessage: "",
         };
       },
       async mounted() {
@@ -192,6 +211,13 @@
               userPrompt: this.userPrompt,
             }),
           });
+
+          if (response.status !== 200) {
+            this.errorMessage = response.statusText;
+            this.displayProgressIndicator = false;
+            return;
+          }
+
           const data = await response.json();
           this.displayProgressIndicator = false;
           this.completion = data.completion;
@@ -200,12 +226,18 @@
           const response = await fetch("/api/prompts", {
             method: "GET",
           });
+
+          if (response.status !== 200) {
+            this.errorMessage = response.statusText;
+            return;
+          }
+
           const data = await response.json();
           return data.systemPrompts;
         },
         async getCaptions() {
           this.disableGetCaptionsButton = true;
-          this.captionsErrorMessage = "";
+          this.errorMessage = "";
 
           const response = await fetch("/api/captions", {
             method: "POST",
@@ -218,7 +250,7 @@
           });
 
           if (response.status !== 200) {
-            this.captionsErrorMessage = response.statusText;
+            this.errorMessage = response.statusText;
             this.disableGetCaptionsButton = false;
             return;
           }
