@@ -21,12 +21,11 @@
           and more.
         </h2>
         <p>
-          Notes: 
           <ol>
             <li>This tool is for <b>internal use only.</b> Please do not share.</li>
             <li>There is a limit of ~10 minutes for video transcripts. After that you will likely hit the token limit in GPT (16K).</li>
             <li>If you are using a YouTube captions as the source, its best to use the "Get Captions from YouTube" button. The captions that the app downloads are formatted for a better response from GPT. You can paste in vtt, ect. but YMMV.</li>
-            <li>Accepting PR's at https://github.com/burkeholland/auto-blogger</li>
+            <li>Accepting PR's at <a href="https://github.com/burkeholland/advocacy-ai-tools">https://github.com/burkeholland/advocacy-ai-tools</a> ❤️</li>
           </ol>
         </p>
       </div>
@@ -112,7 +111,7 @@
           </div>
           <div class="column is-half">
             <div class="field" id="completion">
-              <label class="label" for="response">Completion</label>
+              <label class="label" for="response">Completion {{tokensUsed}}</label>
             </div>
             <div class="control">
               <pre>{{ completion }}</pre>
@@ -177,6 +176,7 @@
     const app = Vue.createApp({
       data() {
         return {
+          tokensUsed: "",
           userPrompt: "",
           systemPrompt: "Select A Prompt",
           displayDownloadModal: false,
@@ -213,14 +213,15 @@
           });
 
           if (response.status !== 200) {
-            this.errorMessage = response.statusText;
+            this.errorMessage = response;
             this.displayProgressIndicator = false;
             return;
           }
 
           const data = await response.json();
           this.displayProgressIndicator = false;
-          this.completion = data.completion;
+          this.completion = data.choices[0].message.content;
+          this.tokensUsed = `(${data.usage.total_tokens} of 1600 tokens used)`;
         },
         async getSystemPrompts() {
           const response = await fetch("/api/prompts", {
