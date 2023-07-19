@@ -1,174 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auto Advocate</title>
+    <script src="https://unpkg.com/vue@next"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Advocate</title>
-  <script src="https://unpkg.com/vue@next"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css" />
-  <link rel="stylesheet" href="site.css" />
-</head>
-
-<body>
-  <div class="container" id="app">
-    <div class="section">
-      <div class="title">Advocacy AI Tools</div>
-      <h2 class="subtitle">
-        Create social content based on video transcripts, blog posts and
-        documenatation.
-      </h2>
-    </div>
-    <div class="section">
-      <div class="columns">
-        <div class="column is-half" style="border-right: 1px solid #ddd;">
-          <label class="label is-inline" for="transcript">Source</label>
-          <label class="label is-inline is-pulled-right"><a @click="displayDownloadModal = true">Download
-              from YouTube</a></label>
-          <div>
-            <div class="control">
-              <textarea class="textarea"
-                placeholder="paste in source (video transcript, doc article, release notes, ect)..." name="userPrompt"
-                id="userPrompt" v-model="userPrompt" cols="30" rows="5" v-model="userPrompt"
-                @input="saveToLocalStorage('userPrompt', $event.target.value)"></textarea>
-            </div>
-            <label for=" systemPrompt" class="label">Prompt</label>
-            <div class="control">
-              <textarea class="textarea" placeholder="" name="systemPrompt" id="systemPrompt" cols="30" rows="5"
-                v-model="systemPrompt"></textarea>
-              </form>
-              <div id="promptSelect" class="field is-grouped mt-3" v-if="!displayProgressIndicator">
-                <div class="columns is-vcentered">
-                  <div class="column" hx-indicator="#progress-indicator">
-                    Generate a:
-                  </div>
-                  <div class="column">
-                    <div class="select">
-                      <select title="Prompt Options" v-model="systemPrompt" name="systemPrompts">
-                        <option selected key="default">Select A Prompt</option>
-                        <option v-for="(prompt, key) in systemPrompts" :key="prompt.id" :value="prompt.systemPrompt">{{
-                          prompt.promptName }}
-                        </option>
-                      </select>
+  <body>
+    <div class="container" id="app">
+      <div class="section">
+        <div class="title">Advocacy AI Tools</div>
+        <h2 class="subtitle">
+          Create social content based on video transcripts, blog posts and
+          documenatation.
+        </h2>
+      </div>
+      <div class="section">
+        <div class="columns">
+          <div class="column is-half" style="border-right: 1px solid #ddd">
+            <label class="label is-inline" for="transcript">Source</label>
+            <label class="label is-inline is-pulled-right"
+              ><a @click="displayDownloadModal = true"
+                >Download from YouTube</a
+              ></label
+            >
+            <div>
+              <div class="control">
+                <textarea
+                  class="textarea"
+                  placeholder="paste in source (video transcript, doc article, release notes, ect)..."
+                  name="userPrompt"
+                  id="userPrompt"
+                  v-model="userPrompt"
+                  cols="30"
+                  rows="5"
+                  v-model="userPrompt"
+                  @input="saveToLocalStorage('userPrompt', $event.target.value)"
+                ></textarea>
+              </div>
+              <label for=" systemPrompt" class="label">Prompt</label>
+              <div class="control">
+                <textarea
+                  class="textarea"
+                  placeholder=""
+                  name="systemPrompt"
+                  id="systemPrompt"
+                  cols="30"
+                  rows="5"
+                  v-model="systemPrompt"
+                ></textarea>
+                <div
+                  id="promptSelect"
+                  class="field is-grouped mt-3"
+                  v-if="!displayProgressIndicator"
+                >
+                  <div class="columns is-vcentered">
+                    <div class="column" hx-indicator="#progress-indicator">
+                      Generate a:
+                    </div>
+                    <div class="column">
+                      <div class="select">
+                        <select
+                          title="Prompt Options"
+                          v-model="systemPrompt"
+                          name="systemPrompts"
+                        >
+                          <option selected key="default">
+                            Select A Prompt
+                          </option>
+                          <option
+                            v-for="(prompt, key) in systemPrompts"
+                            :key="prompt.id"
+                            :value="prompt.systemPrompt"
+                          >
+                            {{ prompt.promptName }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="column is-narrow">
+                      <button class="button" @click="getCompletion">Go</button>
                     </div>
                   </div>
-                  <div class="column is-narrow">
-                    <button class="button" @click="getCompletion">
-                      Go
-                    </button>
-                  </div>
+                </div>
+                <div id="progress-indicator" v-if="displayProgressIndicator">
+                  <progress class="progress is-large is-info mt-3" max="100">
+                    60%
+                  </progress>
                 </div>
               </div>
-              <div id="progress-indicator mt-3" v-if="displayProgressIndicator">
-                <progress class="progress is-large is-info" max="100">
-                  60%
-                </progress>
+            </div>
+          </div>
+          <div class="column is-half">
+            <div class="field" id="completion">
+              <label class="label" for="response">Completion</label>
+            </div>
+            <div class="control">
+              <pre>{{ completion }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        id="downloadUrlModal"
+        class="modal"
+        :class="{ 'is-active': displayDownloadModal }"
+      >
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <div class="modal-card-head">
+            <button
+              class="delete is-pulled-right"
+              aria-label="close"
+              @click="displayDownloadModal = false"
+            ></button>
+          </div>
+          <div class="modal-card-body">
+            <p>Enter a YouTube video URL to download the transcript</p>
+            <div class="field">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  type="text"
+                  placeholder="Enter a video URL"
+                  v-model="videoUrl"
+                />
               </div>
             </div>
           </div>
-        </div>
-        <div class="column is-half">
-          <div class="field" id="completion">
-            <label class="label" for="response">Completion</label>
-          </div>
-          <div class="control">
-            <pre>{{ completion }}</pre>
+          <footer class="modal-card-foot is-justify-content-flex-end">
+            <button
+              class="button"
+              :class="{ 'is-loading': disableGetCaptionsButton}"
+              @click="getCaptions"
+            >
+              Get Captions
+            </button>
+          </footer>
+          <div
+            class="is-display-block notification is-danger"
+            v-if="captionsErrorMessage"
+          >
+            Unable to retrieve captions: {{captionsErrorMessage}}
           </div>
         </div>
       </div>
     </div>
-    <div id="downloadUrlModal" class="modal" :class="{ 'is-active': displayDownloadModal }">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <div class="modal-card-head">
-          <button class="delete is-pulled-right" aria-label="close" @click="displayDownloadModal = false"></button>
-        </div>
-        <div class="modal-card-body">
-          <p>
-            Enter a YouTube video URL to download the transcript
-          </p>
-          <div class="field">
-            <div class="control is-expanded">
-              <input class="input" type="text" placeholder="Enter a video URL" v-model="videoUrl">
-            </div>
-          </div>
-        </div>
-        <footer class="modal-card-foot is-justify-content-flex-end">
-          <button class="button" @click="getCaptions">Get
-            Captions</button>
-        </footer>
-      </div>
-    </div>
-</body>
-</div>
-<script>
-  // create a new vue app
-  const app = Vue.createApp({
-    data() {
-      return {
-        userPrompt: "",
-        systemPrompt: "Select A Prompt",
-        displayDownloadModal: false,
-        displayProgressIndicator: false,
-        systemPrompts: [{
-          id: 1,
-          promptName: "Loading prompts...",
-          systemPrompt: "loading"
-        }],
-        videoUrl: "",
-        completion: ""
-      };
-    },
-    async mounted() {
-      this.systemPrompts = await this.getSystemPrompts();
-      this.userPrompt = localStorage.getItem("userPrompt") || "";
-    },
-    methods: {
-      async getCompletion() {
-        this.displayProgressIndicator = true;
-        const response = await fetch("/api/completion", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            systemPrompt: this.systemPrompt,
-            userPrompt: this.userPrompt
-          })
-        });
-        const data = await response.json();
-        this.displayProgressIndicator = false;
-        this.completion = data.completion;
+  </body>
+  <script>
+    // create a new vue app
+    const app = Vue.createApp({
+      data() {
+        return {
+          userPrompt: "",
+          systemPrompt: "Select A Prompt",
+          displayDownloadModal: false,
+          displayProgressIndicator: false,
+          disableGetCaptionsButton: false,
+          systemPrompts: [
+            {
+              id: 1,
+              promptName: "Loading prompts...",
+              systemPrompt: "loading",
+            },
+          ],
+          videoUrl: "",
+          completion: "",
+          captionsErrorMessage: "",
+        };
       },
-      async getSystemPrompts() {
-        const response = await fetch("/api/prompts", {
-          method: "GET"
-        });
-        const data = await response.json();
-        return data.systemPrompts;
+      async mounted() {
+        this.systemPrompts = await this.getSystemPrompts();
+        this.userPrompt = localStorage.getItem("userPrompt") || "";
       },
-      async getCaptions() {
-        const response = await fetch("/api/captions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            videoUrl: this.videoUrl
-          })
-        });
-        const data = await response.json();
+      methods: {
+        async getCompletion() {
+          this.displayProgressIndicator = true;
+          const response = await fetch("/api/completion", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              systemPrompt: this.systemPrompt,
+              userPrompt: this.userPrompt,
+            }),
+          });
+          const data = await response.json();
+          this.displayProgressIndicator = false;
+          this.completion = data.completion;
+        },
+        async getSystemPrompts() {
+          const response = await fetch("/api/prompts", {
+            method: "GET",
+          });
+          const data = await response.json();
+          return data.systemPrompts;
+        },
+        async getCaptions() {
+          this.disableGetCaptionsButton = true;
+          this.captionsErrorMessage = "";
 
-        this.saveToLocalStorage('userPrompt', data.captions);
+          const response = await fetch("/api/captions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              videoUrl: this.videoUrl,
+            }),
+          });
 
-        this.displayDownloadModal = false;
-        this.userPrompt = data.captions;
+          if (response.status !== 200) {
+            this.captionsErrorMessage = response.statusText;
+            this.disableGetCaptionsButton = false;
+            return;
+          }
+
+          const data = await response.json();
+
+          this.saveToLocalStorage("userPrompt", data.captions);
+
+          this.displayDownloadModal = false;
+          this.disableGetCaptionsButton = false;
+
+          this.userPrompt = data.captions;
+        },
+        saveToLocalStorage(name, value) {
+          localStorage.setItem(name, value);
+        },
       },
-      saveToLocalStorage(name, value) {
-        localStorage.setItem(name, value);
-      }
-    }
-  }).mount("#app");
-</script>
-
+    }).mount("#app");
+  </script>
 </html>
