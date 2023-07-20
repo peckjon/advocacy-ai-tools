@@ -1,7 +1,9 @@
-var { getSubtitles } = require("youtube-caption-extractor");
-var fetch = require("node-fetch");
+const getSubtitles = require("youtube-caption-extractor");
+const authService = require("../services/authService");
 
 module.exports = async function (context, req) {
+  authService.checkForApprovedEmailDomain(req, context);
+
   try {
     // parse the id off the body
     const { videoUrl } = req.body;

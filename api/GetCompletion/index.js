@@ -1,7 +1,10 @@
-var fetch = require("node-fetch");
-var { encode } = require("gpt-3-encoder");
+const fetch = require("node-fetch");
+const { encode } = require("gpt-3-encoder");
+const authService = require("../services/authService");
 
 module.exports = async function (context, req) {
+  authService.checkForApprovedEmailDomain(req, context);
+
   try {
     // read the source and prompt parameters from the body of the request.The body is www - form - urlencoded.
     const { userPrompt, systemPrompt } = req.body;
