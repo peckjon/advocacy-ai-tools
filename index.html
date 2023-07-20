@@ -15,11 +15,22 @@
   <body>
     <div class="container" id="app">
       <div class="section">
+        <div style="text-align: right">
+          <a class="button" href="/login.html">Log Out</a>
+        </div>
         <div class="title">Advocacy AI Tools</div>
         <h2 class="subtitle">
           Create social content based on video transcripts, blog posts and
           documentation and more.
         </h2>
+        <p>
+          This tool is for <b>internal use only</b>. Please do not share.
+          Accepting PR's on
+          <a href="https://github.com/burkeholland/advocacy-ai-tools"
+            >https://github.com/burkeholland/advocacy-ai-tools</a
+          >
+          ❤️
+        </p>
       </div>
       <div class="section">
         <div class="columns">
@@ -85,7 +96,9 @@
                       </div>
                     </div>
                     <div class="column is-narrow">
-                      <button class="button" @click="getCompletion">Go</button>
+                      <button class="button is-primary" @click="getCompletion">
+                        Go
+                      </button>
                     </div>
                   </div>
                 </div>
