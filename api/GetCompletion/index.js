@@ -34,6 +34,6 @@ module.exports = async function (context, req) {
     headers: {
       "Content-Type": "text/html",
     },
-    body: { completion: json.choices[0].message.content, usedTokens: json.usage.total_tokens, availableTokens: 1600 }
+    body: { completion: json.choices[0].message.content, usedTokens: json.usage.total_tokens, availableTokens: 16000 }
   };
 }
