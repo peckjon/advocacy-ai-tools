@@ -18,7 +18,7 @@
         <div class="title">Advocacy AI Tools</div>
         <h2 class="subtitle">
           Create social content based on video transcripts, blog posts and
-          documenatation.
+          documentation and more.
         </h2>
       </div>
       <div class="section">
@@ -27,7 +27,7 @@
             <label class="label is-inline" for="transcript">Source</label>
             <label class="label is-inline is-pulled-right"
               ><a @click="displayDownloadModal = true"
-                >Download from YouTube</a
+                >Get captions from YouTube</a
               ></label
             >
             <div>
@@ -44,7 +44,7 @@
                   @input="saveToLocalStorage('userPrompt', $event.target.value)"
                 ></textarea>
               </div>
-              <label for=" systemPrompt" class="label">Prompt</label>
+              <label for=" systemPrompt" class="label mt-3">Prompt</label>
               <div class="control">
                 <textarea
                   class="textarea"
@@ -99,7 +99,9 @@
           </div>
           <div class="column is-half">
             <div class="field" id="completion">
-              <label class="label" for="response">Completion</label>
+              <label class="label" for="response"
+                >Completion {{tokensUsed}}</label
+              >
             </div>
             <div class="control">
               <pre>{{ completion }}</pre>
@@ -122,7 +124,7 @@
             ></button>
           </div>
           <div class="modal-card-body">
-            <p>Enter a YouTube video URL to download the transcript</p>
+            <p>Enter a YouTube video URL to download the captions</p>
             <div class="field">
               <div class="control is-expanded">
                 <input
@@ -175,6 +177,7 @@
           videoUrl: "",
           completion: "",
           errorMessage: "",
+          tokensUsed: "",
         };
       },
       async mounted() {
@@ -190,8 +193,12 @@
             userPrompt: this.userPrompt,
           });
 
+          if (response.status === 200) {
+            this.completion = response.data.completion;
+            this.tokensUsed = `(${response.data.usedTokens} of ${response.data.availableTokens} tokens)`;
+          }
+
           this.displayProgressIndicator = false;
-          this.completion = response.data.completion;
         },
         async getSystemPrompts() {
           const response = await this.callAPI("GET", "/api/prompts");
