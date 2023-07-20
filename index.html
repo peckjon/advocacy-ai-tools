@@ -1,273 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Auto Advocate</title>
-    <script src="https://unpkg.com/vue@next"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css"
-    />
-    <link rel="stylesheet" href="site.css" />
-  </head>
 
-  <body>
-    <div class="container" id="app">
-      <div class="section">
-        <div style="text-align: right">
-          <a href="/login.html" class="button">Log Out</a>
-        </div>
-        <div class="title mt-4">Advocacy AI Tools</div>
-        <h2 class="subtitle">
-          Create content based on video transcripts, blog posts, documentation
-          and more.
-        </h2>
-        <p>
-          This tool is for <b>internal use only.</b> Please do not share. Accepting PR's at <a href="https://github.com/burkeholland/advocacy-ai-tools">https://github.com/burkeholland/advocacy-ai-tools</a> ❤️</li>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Advocate</title>
+  <script src="https://unpkg.com/vue@next"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css" />
+  <link rel="stylesheet" href="site.css" />
+</head>
 
-        </p>
-      </div>
-      <div class="section">
-        <div class="columns">
-          <div class="column is-half" style="border-right: 1px solid #ddd">
-            <label class="label is-inline" for="transcript">Source</label>
-            <label class="label is-inline is-pulled-right"
-              ><a
-                title="Download the video transcript from YouTube."
-                @click="displayDownloadModal = true"
-                >Get Captions from YouTube</a
-              ></label
-            >
-            <div>
-              <div class="control">
-                <textarea
-                  class="textarea"
-                  placeholder="Paste in source (video captions, doc article, release notes, ect)..."
-                  name="userPrompt"
-                  id="userPrompt"
-                  v-model="userPrompt"
-                  cols="30"
-                  rows="5"
-                  v-model="userPrompt"
-                  @input="saveToLocalStorage('userPrompt', $event.target.value)"
-                ></textarea>
-              </div>
-              <label for=" systemPrompt" class="label mt-2">Prompt</label>
-              <div class="control">
-                <textarea
-                  class="textarea"
-                  placeholder=""
-                  name="systemPrompt"
-                  id="systemPrompt"
-                  cols="30"
-                  rows="5"
-                  v-model="systemPrompt"
-                ></textarea>
-                <div
-                  id="promptSelect"
-                  class="field is-grouped mt-3"
-                  v-if="!displayProgressIndicator"
-                >
-                  <div class="columns is-vcentered">
-                    <div class="column" hx-indicator="#progress-indicator">
-                      Generate a:
-                    </div>
-                    <div class="column">
-                      <div class="select">
-                        <select
-                          title="Prompt Options"
-                          v-model="systemPrompt"
-                          name="systemPrompts"
-                        >
-                          <option selected key="default">
-                            Select A Prompt
-                          </option>
-                          <option
-                            v-for="(prompt, key) in systemPrompts"
-                            :key="prompt.id"
-                            :value="prompt.systemPrompt"
-                          >
-                            {{ prompt.promptName }}
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="column is-narrow">
-                      <button class="button is-primary" @click="getCompletion">
-                        Go
-                      </button>
+<body>
+  <div class="container" id="app">
+    <div class="section">
+      <div class="title">Advocacy AI Tools</div>
+      <h2 class="subtitle">
+        Create social content based on video transcripts, blog posts and
+        documenatation.
+      </h2>
+    </div>
+    <div class="section">
+      <div class="columns">
+        <div class="column is-half" style="border-right: 1px solid #ddd">
+          <label class="label is-inline" for="transcript">Source</label>
+          <label class="label is-inline is-pulled-right"><a @click="displayDownloadModal = true">Download from
+              YouTube</a></label>
+          <div>
+            <div class="control">
+              <textarea class="textarea"
+                placeholder="paste in source (video transcript, doc article, release notes, ect)..." name="userPrompt"
+                id="userPrompt" v-model="userPrompt" cols="30" rows="5" v-model="userPrompt"
+                @input="saveToLocalStorage('userPrompt', $event.target.value)"></textarea>
+            </div>
+            <label for=" systemPrompt" class="label">Prompt</label>
+            <div class="control">
+              <textarea class="textarea" placeholder="" name="systemPrompt" id="systemPrompt" cols="30" rows="5"
+                v-model="systemPrompt"></textarea>
+              <div id="promptSelect" class="field is-grouped mt-3" v-if="!displayProgressIndicator">
+                <div class="columns is-vcentered">
+                  <div class="column" hx-indicator="#progress-indicator">
+                    Generate a:
+                  </div>
+                  <div class="column">
+                    <div class="select">
+                      <select title="Prompt Options" v-model="systemPrompt" name="systemPrompts">
+                        <option selected key="default">
+                          Select A Prompt
+                        </option>
+                        <option v-for="(prompt, key) in systemPrompts" :key="prompt.id" :value="prompt.systemPrompt">
+                          {{ prompt.promptName }}
+                        </option>
+                      </select>
                     </div>
                   </div>
+                  <div class="column is-narrow">
+                    <button class="button" @click="getCompletion">Go</button>
+                  </div>
                 </div>
-                <div id="progress-indicator" v-if="displayProgressIndicator">
-                  <progress class="progress is-large is-info mt-3" max="100">
-                    60%
-                  </progress>
-                </div>
+              </div>
+              <div id="progress-indicator" v-if="displayProgressIndicator">
+                <progress class="progress is-large is-info mt-3" max="100">
+                  60%
+                </progress>
               </div>
             </div>
           </div>
-          <div class="column is-half">
-            <div class="field" id="completion">
-              <label class="label" for="response">Completion {{tokensUsed}}</label>
-            </div>
-            <div class="control">
-              <pre>{{ completion }}</pre>
-            </div>
+        </div>
+        <div class="column is-half">
+          <div class="field" id="completion">
+            <label class="label" for="response">Completion</label>
+          </div>
+          <div class="control">
+            <pre>{{ completion }}</pre>
           </div>
         </div>
       </div>
-      <div
-        id="downloadUrlModal"
-        class="modal"
-        :class="{ 'is-active': displayDownloadModal }"
-      >
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <div class="modal-card-head">
-            <button
-              class="delete is-pulled-right"
-              aria-label="close"
-              @click="displayDownloadModal = false"
-            ></button>
-          </div>
-          <div class="modal-card-body">
-            <p>
-              Enter a YouTube video URL to download the transcript. The limit
-              for videos is around 10 minutes. After that, you will likely hit
-              the GPT token limit.
-            </p>
-            <div class="field">
-              <div class="control is-expanded">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Enter a video URL"
-                  v-model="videoUrl"
-                />
-              </div>
+    </div>
+    <div id="downloadUrlModal" class="modal" :class="{ 'is-active': displayDownloadModal }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <div class="modal-card-head">
+          <button class="delete is-pulled-right" aria-label="close" @click="displayDownloadModal = false"></button>
+        </div>
+        <div class="modal-card-body">
+          <p>Enter a YouTube video URL to download the transcript</p>
+          <div class="field">
+            <div class="control is-expanded">
+              <input class="input" type="text" placeholder="Enter a video URL" v-model="videoUrl" />
             </div>
           </div>
-          <footer class="modal-card-foot is-justify-content-flex-end">
-            <button
-              class="button"
-              :class="{ 'is-loading': disableGetCaptionsButton}"
-              @click="getCaptions"
-            >
-              Get Captions
-            </button>
-          </footer>
         </div>
+        <footer class="modal-card-foot is-justify-content-flex-end">
+          <button class="button" :class="{ 'is-loading': disableGetCaptionsButton}" @click="getCaptions">
+            Get Captions
+          </button>
+        </footer>
       </div>
-      <div
-        id="error"
-        class="is-display-block notification is-danger"
-        v-if="errorMessage"
-      >
+      <div id="error" class="is-display-block notification is-danger" v-if="errorMessage">
         <button class="delete" @click="errorMessage = ''"></button>
         {{errorMessage}}
       </div>
     </div>
-  </body>
-  <script>
-    // create a new vue app
-    const app = Vue.createApp({
-      data() {
-        return {
-          tokensUsed: "",
-          userPrompt: "",
-          systemPrompt: "Select A Prompt",
-          displayDownloadModal: false,
-          displayProgressIndicator: false,
-          disableGetCaptionsButton: false,
-          systemPrompts: [
-            {
-              id: 1,
-              promptName: "Loading prompts...",
-              systemPrompt: "loading",
-            },
-          ],
-          videoUrl: "",
-          completion: "",
-          errorMessage: "",
-        };
+  </div>
+  <div id="error" class="is-display-block notification is-danger" v-if="errorMessage">
+    Unable to retrieve captions: {{captionsErrorMessage}}
+  </div>
+</body>
+<script>
+  // create a new vue app
+  const app = Vue.createApp({
+    data() {
+      return {
+        userPrompt: "",
+        systemPrompt: "Select A Prompt",
+        displayDownloadModal: false,
+        displayProgressIndicator: false,
+        disableGetCaptionsButton: false,
+        systemPrompts: [
+          {
+            id: 1,
+            promptName: "Loading prompts...",
+            systemPrompt: "loading",
+          },
+        ],
+        videoUrl: "",
+        completion: "",
+        errorMessage: "",
+      };
+    },
+    async mounted() {
+      this.systemPrompts = await this.getSystemPrompts();
+      this.userPrompt = localStorage.getItem("userPrompt") || "";
+    },
+    methods: {
+      async getCompletion() {
+        this.displayProgressIndicator = true;
+        const response = await fetch("/api/completion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            systemPrompt: this.systemPrompt,
+            userPrompt: this.userPrompt,
+          }),
+        });
+        const data = await response.json();
+        this.displayProgressIndicator = false;
+        this.completion = data.completion;
       },
-      async mounted() {
-        this.systemPrompts = await this.getSystemPrompts();
-        this.userPrompt = localStorage.getItem("userPrompt") || "";
+      async getSystemPrompts() {
+        const response = await fetch("/api/prompts", {
+          method: "GET",
+        });
+        const data = await response.json();
+        return data.systemPrompts;
       },
-      methods: {
-        async getCompletion() {
-          this.displayProgressIndicator = true;
-          const response = await fetch("/api/completion", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              systemPrompt: this.systemPrompt,
-              userPrompt: this.userPrompt,
-            }),
-          });
+      async getCaptions() {
+        this.disableGetCaptionsButton = true;
+        this.captionsErrorMessage = "";
 
-          if (response.status !== 200) {
-            this.errorMessage = response;
-            this.displayProgressIndicator = false;
-            return;
-          }
+        const response = await fetch("/api/captions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            videoUrl: this.videoUrl,
+          }),
+        });
 
-          const data = await response.json();
-          this.displayProgressIndicator = false;
-          this.completion = data.choices[0].message.content;
-          this.tokensUsed = `(${data.usage.total_tokens} of 1600 tokens used)`;
-        },
-        async getSystemPrompts() {
-          const response = await fetch("/api/prompts", {
-            method: "GET",
-          });
-
-          if (response.status !== 200) {
-            this.errorMessage = response.statusText;
-            return;
-          }
-
-          const data = await response.json();
-          return data.systemPrompts;
-        },
-        async getCaptions() {
-          this.disableGetCaptionsButton = true;
-          this.errorMessage = "";
-
-          const response = await fetch("/api/captions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              videoUrl: this.videoUrl,
-            }),
-          });
-
-          if (response.status !== 200) {
-            this.errorMessage = response.statusText;
-            this.disableGetCaptionsButton = false;
-            return;
-          }
-
-          const data = await response.json();
-
-          this.saveToLocalStorage("userPrompt", data.captions);
-
-          this.displayDownloadModal = false;
+        if (response.status !== 200) {
+          this.errorMessage = response.statusText;
           this.disableGetCaptionsButton = false;
+          this.displayDownloadModal = false;
+          return;
+        }
 
-          this.userPrompt = data.captions;
-        },
-        saveToLocalStorage(name, value) {
-          localStorage.setItem(name, value);
-        },
+        const data = await response.json();
+
+        this.saveToLocalStorage("userPrompt", data.captions);
+
+        this.displayDownloadModal = false;
+        this.disableGetCaptionsButton = false;
+
+        this.userPrompt = data.captions;
       },
-    }).mount("#app");
-  </script>
+      saveToLocalStorage(name, value) {
+        localStorage.setItem(name, value);
+      },
+    },
+  }).mount("#app");
+</script>
+
 </html>
