@@ -1,4 +1,4 @@
-const getSubtitles = require("youtube-caption-extractor");
+const { getSubtitles } = require("youtube-caption-extractor");
 const authService = require("../services/authService");
 
 module.exports = async function (context, req) {
