@@ -19,7 +19,7 @@ Use GPT to generate social content.
 You'll need to run both the API and frontend. The emulator should do both with a single command...
 
 ```bash
-swa start
+swa start --api-location ./api
 ```
 
 If it doesn't start the API, open a separate terminal instance and run `func start`.
