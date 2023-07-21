@@ -2,7 +2,10 @@ const authService = require("../services/authService");
 const downloadService = require("../services/downloadService");
 
 module.exports = async function (context, req) {
-  authService.checkForApprovedEmailDomain(req, context);
+  const { authorized, newContext } = authService.isUserAuthorized(req, context);
+  if (!authorized) {
+    return newContext;
+  }
 
   try {
     // parse the id off the body

@@ -2,7 +2,10 @@ const cosmos = require("@azure/cosmos");
 const authService = require("../services/authService");
 
 module.exports = async function (context, req) {
-  authService.checkForApprovedEmailDomain(req, context);
+  const { authorized, newContext } = authService.isUserAuthorized(req, context);
+  if (!authorized) {
+    return newContext;
+  }
 
   try {
     // initialize a connection to the cosmos javascript client

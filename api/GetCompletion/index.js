@@ -3,6 +3,11 @@ const { encode } = require("gpt-3-encoder");
 const authService = require("../services/authService");
 
 module.exports = async function (context, req) {
+  const { authorized, newContext } = authService.isUserAuthorized(req, context);
+  if (!authorized) {
+    return newContext;
+  }
+
   // read the source and prompt parameters from the body of the request. The body is www-form-urlencoded.
   const { userPrompt, systemPrompt } = req.body;
 
@@ -41,7 +46,7 @@ module.exports = async function (context, req) {
   if (response.status !== 200) {
     context.res = {
       status: response.status,
-      body: json,
+      body: { body: json.error.message },
     };
     return;
   }

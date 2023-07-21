@@ -180,6 +180,18 @@
           </footer>
         </div>
       </div>
+      <div class="modal" :class="{ 'is-active': displayLoginFailureModal }">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <div class="modal-card-body">
+            <p>
+              It looks like your login is invalid, or has expired. Please log in and try again.
+            </p>
+            <a href="/login.html" class="button is-primary">Log In</a>
+            <button class="button" @click="displayLoginFailureModal = false">Cancel</a>
+          </div>
+        </div>
+      </div>
       <div
         id="error"
         class="is-display-block notification is-danger"
@@ -211,6 +223,7 @@
           completion: "",
           errorMessage: "",
           tokensUsed: "",
+          displayLoginFailureModal: false,
         };
       },
       async mounted() {
@@ -272,8 +285,13 @@
 
           const data = await response.json();
 
+          // handle login expired
+          if (response.status === 401) {
+            this.showLoginFailureModal = true;
+          }
+
           if (response.status !== 200) {
-            this.errorMessage = data.message;
+            this.errorMessage = data.body;
             return { status: response.status };
           }
 
