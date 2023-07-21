@@ -35,7 +35,8 @@
 
       // if we're logged in, log us out
       if (me.clientPrincipal) {
-        window.location.href = "/.auth/logout";
+        window.location.href =
+          "/.auth/logout?post_logout_redirect_uri=/login.html";
       }
     }
 
