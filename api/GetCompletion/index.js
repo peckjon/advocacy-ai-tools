@@ -51,7 +51,7 @@ module.exports = async function (context, req) {
     body: {
       completion: json.choices[0].message.content,
       usedTokens: json.usage.total_tokens,
-      availableTokens: 16000,
+      availableTokens: 16384,
     },
   };
 };

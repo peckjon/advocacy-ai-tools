@@ -37,11 +37,6 @@
         <div class="columns">
           <div class="column is-half" style="border-right: 1px solid #ddd">
             <label class="label is-inline" for="transcript">Source</label>
-            <label class="label is-inline is-pulled-right"
-              ><a @click="displayDownloadModal = true"
-                >Get captions from YouTube</a
-              ></label
-            >
             <div>
               <div class="control">
                 <textarea
@@ -55,6 +50,27 @@
                   v-model="userPrompt"
                   @input="saveToLocalStorage('userPrompt', $event.target.value)"
                 ></textarea>
+                <div class="field is-grouped mt-3">
+                  <div class="columns is-vcentered">
+                    <div class="column">Download:</div>
+                    <div class="column is-narrow">
+                      <button
+                        class="button"
+                        @click="displayDownloadModal = true"
+                      >
+                        YouTube Captions
+                      </button>
+                    </div>
+                    <div>
+                      <button
+                        class="button"
+                        @click="displayDownloadModal = true"
+                      >
+                        Web Page
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <label for=" systemPrompt" class="label mt-3">Prompt</label>
               <div class="control">
@@ -138,14 +154,18 @@
             ></button>
           </div>
           <div class="modal-card-body">
-            <p>Enter a YouTube video URL to download the captions</p>
+            <p>
+              Automatically download captions from YouTube videos and text from
+              blog posts. Enter the URL below and we'll attempt to download the
+              content for you.
+            </p>
             <div class="field">
               <div class="control is-expanded">
                 <input
                   class="input"
                   type="text"
-                  placeholder="Enter a video URL"
-                  v-model="videoUrl"
+                  placeholder="Enter the URL of a YouTube video or web page"
+                  v-model="downloadUrl"
                 />
               </div>
             </div>
@@ -153,10 +173,10 @@
           <footer class="modal-card-foot is-justify-content-flex-end">
             <button
               class="button"
-              :class="{ 'is-loading': disableGetCaptionsButton}"
-              @click="getCaptions"
+              :class="{ 'is-loading': disableDownloadButton}"
+              @click="downloadContent"
             >
-              Get Captions
+              Download
             </button>
           </footer>
         </div>
@@ -180,7 +200,7 @@
           systemPrompt: "Select A Prompt",
           displayDownloadModal: false,
           displayProgressIndicator: false,
-          disableGetCaptionsButton: false,
+          disableDownloadButton: false,
           systemPrompts: [
             {
               id: 1,
@@ -188,7 +208,7 @@
               systemPrompt: "loading",
             },
           ],
-          videoUrl: "",
+          downloadUrl: "",
           completion: "",
           errorMessage: "",
           tokensUsed: "",
@@ -218,21 +238,21 @@
           const response = await this.callAPI("GET", "/api/prompts");
           return response.data.systemPrompts;
         },
-        async getCaptions() {
-          this.disableGetCaptionsButton = true;
+        async downloadContent() {
+          this.disableDownloadButton = true;
           this.errorMessage = "";
 
-          const response = await this.callAPI("POST", "/api/captions", {
-            videoUrl: this.videoUrl,
+          const response = await this.callAPI("POST", "/api/download", {
+            downloadUrl: this.downloadUrl,
           });
 
           if (response.status === 200) {
-            this.saveToLocalStorage("userPrompt", response.data.captions);
-            this.userPrompt = response.data.captions;
+            this.saveToLocalStorage("userPrompt", response.data.body);
+            this.userPrompt = response.data.body;
           }
 
           this.displayDownloadModal = false;
-          this.disableGetCaptionsButton = false;
+          this.disableDownloadButton = false;
         },
         saveToLocalStorage(name, value) {
           localStorage.setItem(name, value);
